@@ -17,6 +17,12 @@
 
 The framework adopts a dual-stream RGB/depth encoder with a deformable Transformer and two complementary prediction branches: a **Kernel Branch** for instance-aware kernels and a **Mask Branch** for pixel-level mask features. The resulting instance kernels and mask features are combined for salient instance segmentation.
 
+## Highlights
+
+- **Cross-Modal Attention Exchange (CMAE):** exchanges spatial attention responses between RGB and depth features to improve complementary fusion.
+- **Adaptive Dynamic Interaction Kernel (ADIK):** combines input-dependent conditional convolution and cross-modal gating to generate adaptive instance-aware representations.
+- **Frequency-Adaptive Depth Enhancement (FADE):** applies RGB-guided, channel-adaptive frequency filtering to depth features using real FFT and inverse real FFT.
+- **Competitive performance:** evaluated on COME15K-E, COME15K-H, DSIS, and SIP.
 
 ## Architecture
 
@@ -26,6 +32,22 @@ The overall pipeline consists of:
 2. **Mask Branch:** CMAE exchanges attention between modalities and constructs fused pixel-level mask representations.
 3. **Kernel Branch:** FADE enhances depth representations and ADIK generates dynamic instance-aware kernels.
 4. **Instance prediction:** instance kernels interact with mask features; training uses bipartite matching.
+
+> **Figure placeholder:** Add the architecture figure from the paper to `assets/architecture.png`, then uncomment:
+>
+> `<!-- ![ADINet architecture](assets/architecture.png) -->`
+
+### CMAE
+
+CMAE compresses RGB/depth features, generates spatial attention for each modality, exchanges the attention maps across modalities, and fuses the modulated features with a residual connection. This allows semantic RGB cues and geometric depth cues to guide one another.
+
+### ADIK
+
+ADIK uses conditional convolution with multiple expert kernels, whose mixing coefficients depend on the input. Cross-modal complementary gating then supports instance-aware attention and kernel generation, improving adaptability to occlusion, scale variation, and complex boundaries.
+
+### FADE
+
+FADE derives channel-adaptive modulation from RGB features, transforms depth features into the frequency domain with RFFT, and combines a Gaussian low-pass basis with learnable channel-wise frequency responses. The filtered features are transformed back with IRFFT. This is intended to reduce the influence of noisy or incomplete depth measurements while retaining useful structure.
 
 ## Repository Structure
 
@@ -88,7 +110,17 @@ DATASETS:
   TEST: ("come15k_test_e", "come15k_test_h", "dsis_test", "sip_test")
 ```
 
-**Important:** Dataset download URLs and a fully verified directory layout are not provided here. Check the dataset registration implementation before preparing files; do not assume a generic COCO folder layout is accepted without conversion.
+### Dataset Download Links
+
+The datasets can be downloaded from the following links provided in the manuscript's **Data Availability** statement:
+
+| Dataset | Download |
+|---|---|
+| COME15K | [Google Drive](https://drive.google.com/file/d/15UdZBdtmwxq7PiCHUpkMgnUxbLF1p_O5/view) |
+| DSIS | [Google Drive](https://drive.google.com/file/d/1zqWo6vSB4ARJqu49PqoyKatj9xxolsPp/view) |
+| SIP | [Google Drive](https://drive.google.com/file/d/1ebNjyrS28vEXDGawxHxVFNNxz3XLBqrT/view) |
+
+**Note:** The links above were supplied in the Data Availability statement and have not been independently checked for accessibility. After downloading, check the dataset registration implementation before preparing files; do not assume a generic COCO folder layout is accepted without conversion.
 
 ## Training
 
@@ -168,6 +200,9 @@ The reported FPS values are from the paper's comparison; benchmark conditions sh
 
 The full configuration improves AP by 1.2 points and AP70 by 1.3 points over the reported baseline on COME15K-H.
 
+## Limitations
+
+The paper identifies remaining challenges in detecting very small instances embedded within larger salient objects, suppressing structurally similar background regions, and preserving intricate object boundaries.
 
 ## Citation
 
@@ -181,7 +216,9 @@ If you use this repository, please cite the accompanying manuscript. A formal Bi
 }
 ```
 
+## Acknowledgements
 
+This project builds on the Detectron2 ecosystem and RGB-D salient instance segmentation research, including CalibNet. We thank the authors and maintainers of the relevant frameworks and datasets.
 
 ## Contact
 
